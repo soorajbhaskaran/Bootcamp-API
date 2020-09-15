@@ -2,7 +2,7 @@ const express = require('express');
 const dotEnv = require('dotenv');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
-const colors=require('colors');
+const colors = require('colors');
 
 //This loads all the env variables
 dotEnv.config({ path: './config/config.env' });
@@ -10,10 +10,14 @@ dotEnv.config({ path: './config/config.env' });
 //connecting Route files
 const bootcamp = require('./routes/bootcamps');
 
+
 //connecting to database
 connectDB();
 
 const app = express();
+
+//Body parsing
+app.use(express.json());
 
 //us
 if (process.env.NODE_ENV === 'development') {
