@@ -2,6 +2,7 @@ const express = require('express');
 const dotEnv = require('dotenv');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
+const customError = require('./middleware/error');
 const colors = require('colors');
 
 //This loads all the env variables
@@ -19,7 +20,7 @@ const app = express();
 //Body parsing
 app.use(express.json());
 
-//us
+//using middleware only in development mode
 if (process.env.NODE_ENV === 'development') {
 
     app.use(morgan('dev'));
@@ -27,6 +28,9 @@ if (process.env.NODE_ENV === 'development') {
 
 //Mounts router with url
 app.use('/api/v1/bootcamp', bootcamp);
+
+//use express custom error handler
+app.use(customError);
 
 
 const PORT = process.env.PORT || 5000;
