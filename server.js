@@ -10,6 +10,7 @@ dotEnv.config({ path: './config/config.env' });
 
 //connecting Route files
 const bootcamp = require('./routes/bootcamps');
+const course = require('./routes/courses');
 
 
 //connecting to database
@@ -28,6 +29,7 @@ if (process.env.NODE_ENV === 'development') {
 
 //Mounts router with url
 app.use('/api/v1/bootcamp', bootcamp);
+app.use('/api/v1/courses', course);
 
 //use express custom error handler
 app.use(customError);
