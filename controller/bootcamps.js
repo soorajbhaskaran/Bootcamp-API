@@ -8,13 +8,75 @@ const geocoder = require('../utils/geocoder');
 //@router /api/v1/bootcamp
 //@access Public
 exports.getBootcamp = asyncHandler(async (req, res, next) => {
+
+    //Declaring a query variable
     let query;
-    let queryStr = JSON.stringify(req.query);
+
+    //Copying req.query
+    reqQuery = { ...req.query };
+
+    //Fields to execute
+    const removeQuery = ['select', 'sort', 'limit', 'page'];
+
+    //Removing query from the url
+    removeQuery.forEach(param => delete reqQuery[param]);
+
+
+    //Converting to query form
+    let queryStr = JSON.stringify(reqQuery);
+
+    //Including operator like gt,gte etc
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
 
+    //Finding the specified resource from the database
     query = Bootcamp.find(JSON.parse(queryStr));
+
+    //Select operator finding 
+    if (req.query.select) {
+        const fields = req.query.select.split(',').join(' ');
+        // console.log(fields)
+        query = query.select(fields);
+        //console.log(query);
+
+    }
+
+    //Sort function
+    if (req.query.sort) {
+        const sortBy = req.query.sort.split(',').join(' ');
+        query = query.sort(sortBy);
+    } else {
+        query = query.sort('-createdAt')
+    }
+
+    //Pagination
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 100;
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const total = await Bootcamp.countDocuments();
+
+    //Adding skipping for showing number of entries from a page
+    query = query.skip(startIndex).limit(limit);
+
+    const pagination = {};
+
+    //Pagination showing as request
+    if (endIndex < total) {
+        pagination.next = {
+            page: page + 1,
+            limit
+        }
+    }
+    if (startIndex > 0) {
+        pagination.previous = {
+            page: page - 1,
+            limit
+        }
+    }
+
+    //Executing the function from database
     const bootcamp = await query;
-    res.status(200).json({ success: true, count: bootcamp.length, data: bootcamp })
+    res.status(200).json({ success: true, count: bootcamp.length, pagination, data: bootcamp });
 
 
 });
