@@ -1,9 +1,11 @@
 const express = require('express');
+const fileUpload = require('express-fileupload');
 const dotEnv = require('dotenv');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
 const customError = require('./middleware/error');
 const colors = require('colors');
+const path = require('path');
 
 //This loads all the env variables
 dotEnv.config({ path: './config/config.env' });
@@ -16,6 +18,8 @@ const course = require('./routes/courses');
 //connecting to database
 connectDB();
 
+
+//Declaring app
 const app = express();
 
 //Body parsing
@@ -27,9 +31,15 @@ if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
 }
 
+//File uploading
+app.use(fileUpload());
+
 //Mounts router with url
 app.use('/api/v1/bootcamp', bootcamp);
 app.use('/api/v1/courses', course);
+
+//Declaring static file
+app.use(express.static(path.join(__dirname, 'public')));
 
 //use express custom error handler
 app.use(customError);

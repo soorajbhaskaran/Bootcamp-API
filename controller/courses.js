@@ -3,33 +3,26 @@ const ErrorResponce = require('../utils/errorResponce');
 const asyncHandler = require('../middleware/asyn');
 const Bootcamp = require('../models/Bootcamp');
 
+
 //@desc get all Courses
 //@router /api/v1/courses
 //@router /api/v1/bootcamp/bootcampId/courses
 //@access Public
 
 exports.getCourses = asyncHandler(async (req, res, next) => {
-    let query;
 
     //Checking for first condition if the route is through bootcamp
     if (req.params.bootcampId) {
-        query = Course.find({ bootcamp: req.params.bootcampId })
-    } else {
-        query = Course.find();
+        const course = await Course.find({ bootcamp: req.params.bootcampId });
+
+        return res.status(200).json({
+            success: true,
+            count: course.length,
+            data: course
+        })
     }
+    res.status(200).json(res.advancedResults);
 
-    //Loading from the database
-    const courses = await query.populate({
-        path: 'bootcamp',
-        select: 'name description'
-    });
-
-    //Sending responce to client
-    res.status(200).json({
-        success: true,
-        count: courses.length,
-        data: courses
-    })
 });
 
 //@desc get SIngle Courses
@@ -98,7 +91,8 @@ exports.updateCourse = asyncHandler(async (req, res, next) => {
     //Updating the course
     courses = await Course.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
-        runValidators: true});
+        runValidators: true
+    });
 
     //Sending responce to client
     res.status(200).json({
@@ -130,5 +124,7 @@ exports.deleteCourse = asyncHandler(async (req, res, next) => {
         data: {}
     })
 });
+
+
 
 
