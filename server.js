@@ -13,6 +13,7 @@ dotEnv.config({ path: './config/config.env' });
 //connecting Route files
 const bootcamp = require('./routes/bootcamps');
 const course = require('./routes/courses');
+const user=require('./routes/auth');
 
 
 //connecting to database
@@ -37,6 +38,7 @@ app.use(fileUpload());
 //Mounts router with url
 app.use('/api/v1/bootcamp', bootcamp);
 app.use('/api/v1/courses', course);
+app.use('/api/v1/user', user);
 
 //Declaring static file
 app.use(express.static(path.join(__dirname, 'public')));
