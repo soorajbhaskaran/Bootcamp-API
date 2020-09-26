@@ -6,6 +6,7 @@ const connectDB = require('./config/db');
 const customError = require('./middleware/error');
 const colors = require('colors');
 const path = require('path');
+const cookie = require('cookie-parser');
 
 //This loads all the env variables
 dotEnv.config({ path: './config/config.env' });
@@ -13,7 +14,8 @@ dotEnv.config({ path: './config/config.env' });
 //connecting Route files
 const bootcamp = require('./routes/bootcamps');
 const course = require('./routes/courses');
-const user=require('./routes/auth');
+const user = require('./routes/auth');
+const cookieParser = require('cookie-parser');
 
 
 //connecting to database
@@ -45,6 +47,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 //use express custom error handler
 app.use(customError);
+
+//Using cookie-parser
+app.use(cookieParser());
 
 
 const PORT = process.env.PORT || 5000;

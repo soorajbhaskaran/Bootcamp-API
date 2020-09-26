@@ -1,10 +1,18 @@
 const express = require('express');
-const { register, loginUser } = require('../controller/auth');
+const advancedResults=require('../middleware/advancedResults');
+const { register, loginUser, getMe } = require('../controller/auth');
 
 //Initialising router
 const router = express.Router();
 
-router.route('/register').post(register);
+
+//Declaring protect middleware
+const { protect } = require('../middleware/auth');
+const User = require('../models/User');
+
+
+router.route('/register').post(protect, register);
 router.post('/login', loginUser);
+router.get('/me', protect, getMe);
 
 module.exports = router;
