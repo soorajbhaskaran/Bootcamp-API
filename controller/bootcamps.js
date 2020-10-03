@@ -32,6 +32,16 @@ exports.getSingleBootcamp = asyncHandler(async (req, res, next) => {
 //@access Private
 exports.createBootcamp = asyncHandler(async (req, res, next) => {
 
+    //Create a copy of user from middleware to req.body
+    req.body.user = req.user.id
+
+    const containsBootcamp = await Bootcamp.findOne({ user: req.user.id })
+
+    //A pubisher can add only one bootcamp
+    if (containsBootcamp || req.user.role !== 'admin') {
+        return next(new ErrorResponce(`Bootcamp with id ${req.user.role} cannot add more bootcamps`, 401))
+    }
+
     const bootcamp = await Bootcamp.create(req.body)
     res.status(201).json({ success: true, data: bootcamp });
 

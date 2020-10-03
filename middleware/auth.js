@@ -13,13 +13,14 @@ exports.protect = asyncHandler(async (req, res, next) => {
 
 
     }
+    console.log(token);
     //else if (req.cookies.token) {
     //    token=req.cookies.token
     //}
 
     //Make sure token exists
     if (!token) {
-        return next(new ErrorResponce(`Not authorized to access the request`, 401));
+        return next(new ErrorResponce(`Not authorized to access the request`, 400));
     }
 
     //Verify the token 
@@ -29,6 +30,15 @@ exports.protect = asyncHandler(async (req, res, next) => {
         req.user = await User.findById(decoded.id);
         next();
     } catch (error) {
-        return next(new ErrorResponce(`Not get`, 401));
+        return next(new ErrorResponce(`Not authorized to access the request`, 401));
     }
-})
+});
+
+exports.authorize = (...roles) => {
+    return (req, res, next) => {
+        if (!roles.includes(req.user.role)) {
+            return next(new ErrorResponce(`User with ${req.user.role} is not authorized to access`, 402))
+        }
+        next();
+    }
+}
