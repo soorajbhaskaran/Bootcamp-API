@@ -11,7 +11,7 @@ const Bootcamp = require('../models/Bootcamp');
 
 exports.getCourses = asyncHandler(async (req, res, next) => {
 
-    //Checking for first condition if the route is through bootcamp
+    //Checking for first condition if the route is through bootcamp and filtering
     if (req.params.bootcampId) {
         const course = await Course.find({ bootcamp: req.params.bootcampId });
 
@@ -57,12 +57,20 @@ exports.addCourse = asyncHandler(async (req, res, next) => {
 
     //Adding bootcampId to the new course added
     req.body.bootcamp = req.params.bootcampId
+    req.body.user = req.user.id;
 
     //Finding the specified bootcamp
     const bootcamp = await Bootcamp.findById(req.params.bootcampId);
 
     if (!bootcamp) {
         return next(new ErrorResponce(`Bootcamp with id  ${req.params.bootcampId} not found`, 404));
+    }
+
+
+    //Check if the person owns the bootcamp for creating the course
+    if (bootcamp.user.id.toString() !== req.user.id && req.user.role !== 'admin') {
+        return next(new ErrorResponce(`User with id ${req.user.id} is not authorized to create course in ${bootcamp._id}`))
+
     }
 
     //Creating the course
@@ -82,10 +90,16 @@ exports.addCourse = asyncHandler(async (req, res, next) => {
 exports.updateCourse = asyncHandler(async (req, res, next) => {
 
 
-    let courses = await Course.findById(req.params.id);
+    const courses = await Course.findById(req.params.id);
 
     if (!courses) {
-        return next(new ErrorResponce(`Course with id  ${req.params.bootcampId} not found`, 404));
+        return next(new ErrorResponce(`Course with id  ${req.params.id} not found`, 404));
+    }
+
+    //Check if the person owns the bootcamp for creating the course
+    if (course.user.id.toString() !== req.user.id && req.user.role !== 'admin') {
+        return next(new ErrorResponce(`User with id ${req.user.id} is not authorized to update course in ${course._id}`))
+
     }
 
     //Updating the course
@@ -113,6 +127,12 @@ exports.deleteCourse = asyncHandler(async (req, res, next) => {
 
     if (!courses) {
         return next(new ErrorResponce(`Course with id  ${req.params.bootcampId} not found`, 404));
+    }
+
+    //Check if the person owns the course for deleting the course
+    if (course.user.id.toString() !== req.user.id && req.user.role !== 'admin') {
+        return next(new ErrorResponce(`User with id ${req.user.id} is not authorized to update course in ${course._id}`))
+
     }
 
     //Deleting the course

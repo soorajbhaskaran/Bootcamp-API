@@ -53,10 +53,18 @@ exports.createBootcamp = asyncHandler(async (req, res, next) => {
 //@access Private
 exports.updateBootcamp = asyncHandler(async (req, res, next) => {
 
-    const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    let bootcamp = await Bootcamp.findById(req.params.id);
     if (!bootcamp) {
         return next(new ErrorResponce(`Bootcamp not found with id ${req.params.id}`, 404));
     }
+
+    //Check if the person owns the bootcamp for updating
+    if (bootcamp.user.id.toString() !== req.user.id && req.user.role !== 'admin') {
+        return next(new ErrorResponce(`User with id ${req.user.id} is authorized to use`))
+
+    }
+    bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true })
+
     res.status(200).send({ success: 'true', data: bootcamp });
 
 });
@@ -69,6 +77,12 @@ exports.deleteBootcamp = asyncHandler(async (req, res, next) => {
     const bootcamp = await Bootcamp.findById(req.params.id);
     if (!bootcamp) {
         return next(new ErrorResponce(`Bootcamp not found with id ${req.params.id}`, 404));
+    }
+
+    //Check if the person owns the bootcamp for deleting
+    if (bootcamp.user.id !== req.user.id || req.user.role !== 'admin') {
+        return next(new ErrorResponce(`User with id ${req.user.id} is authorized to use`))
+
     }
 
     //Removing bootcamp especially for running remove middleware
@@ -123,6 +137,12 @@ exports.addPhotoBootcamp = asyncHandler(async (req, res, next) => {
 
     if (!req.files) {
         return next(new ErrorResponce(`Please add a file`, 400));
+    }
+
+    //Check if the person owns the bootcamp for updating photo
+    if (bootcamp.user.id !== req.user.id || req.user.role !== 'admin') {
+        return next(new ErrorResponce(`User with id ${req.user.id} is authorized to use`))
+
     }
 
     //Declare a fileUpload variable
