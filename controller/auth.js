@@ -1,7 +1,8 @@
 const User = require('../models/User');
 const ErrorResponce = require('../utils/errorResponce');
 const asyncHandler = require('../middleware/asyn');
-const { findOne } = require('../models/User');
+const sendEmail = require('../utils/sendEmail');
+const crypto = require('crypto');
 
 
 //@desc Change user
@@ -85,7 +86,7 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
     // Create reset url
     const resetUrl = `${req.protocol}://${req.get(
         'host',
-    )}/api/v1/auth/resetpassword/${resetToken}`;
+    )}/api/v1/user/resetpassword/${resetToken}`;
 
     const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
 
@@ -109,6 +110,68 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
 
 
     }
+});
+
+//@desc Reset new password
+//@router /api/v1/user/resetPassword/:resetpasswordToken
+//@access Public
+exports.resetPassword = asyncHandler(async (req, res, next) => {
+
+    //Hash the reset token
+    const resetPasswordToken = crypto.createHash('sha256').update(req.params.resetToken).digest('hex');
+
+    const user = await User.findOne({ resetPasswordToken, resetPasswordExpire: { $gt: Date.now() } });
+
+    if (!user) {
+        return next(new ErrorResponce('Not FOund', 404));
+    }
+
+    //Create a new password
+    user.password = req.body.password,
+        user.resetPasswordToken = undefined,
+        user.resetPasswordExpire = undefined
+    await user.save();
+
+
+    sendbackCookie(200, res, user);
+
+});
+
+//@desc Update Details
+//@router /api/v1/user/updatedetails
+//@access Private
+exports.updateDetails = asyncHandler(async (req, res, next) => {
+    let updateContent = {
+        name: req.body.name,
+        email: req.body.email
+    }
+
+    const user = await User.findByIdAndUpdate(req.user.id, updateContent, { new: true, runValidators: true });
+
+    if (!user) {
+        return next(new ErrorResponce(`Some error has Occured`, 404));
+    }
+    res.status(200).json({
+        success: true,
+        user
+    })
+});
+
+//@desc Update Password
+//@router /api/v1/user/updatepassword
+//@access Private
+exports.updatePassword = asyncHandler(async (req, res, next) => {
+    const user = await User.findById(req.user.id).select('+password');
+
+    //Checking the match password
+    if ((!await user.matchPassword(req.body.currentPassword))) {
+        return next(new ErrorResponce('Password Matching Failed', 402))
+    }
+
+    user.password = req.body.newPassword;
+    await user.save();
+
+    sendbackCookie(200, res, user);
 });
 
 //Create a cookie from create user and login
