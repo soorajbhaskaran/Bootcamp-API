@@ -14,7 +14,9 @@ dotEnv.config({ path: './config/config.env' });
 //connecting Route files
 const bootcamp = require('./routes/bootcamps');
 const course = require('./routes/courses');
+const review=require('./routes/reviews');
 const user = require('./routes/auth');
+const admin = require('./routes/user');
 const cookieParser = require('cookie-parser');
 
 
@@ -40,7 +42,9 @@ app.use(fileUpload());
 //Mounts router with url
 app.use('/api/v1/bootcamp', bootcamp);
 app.use('/api/v1/courses', course);
+app.use('/api/v1/reviews', review);
 app.use('/api/v1/user', user);
+app.use('/api/v1/admin', admin);
 
 //Declaring static file
 app.use(express.static(path.join(__dirname, 'public')));

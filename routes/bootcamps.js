@@ -4,6 +4,7 @@ const { getBootcamp, createBootcamp, updateBootcamp, deleteBootcamp, getSingleBo
 
 //Initializing  other routes resources
 const courseRouter = require('./courses');
+const reviewRouter = require('./reviews');
 
 //Declaring advancedResults middleware
 const advancedResults = require('../middleware/advancedResults');
@@ -16,6 +17,7 @@ const router = express.Router();
 
 //Re-route to other resources
 router.use('/:bootcampId/courses', courseRouter);
+router.use('/:bootcampId/reviews', reviewRouter);
 
 router.route('/radius/:zipcode/:distance').get(getBootcampFromRadius);
 router.route('/:id/photo').put(protect, authorize('admin', 'publisher'), addPhotoBootcamp);
