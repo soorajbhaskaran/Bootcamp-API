@@ -68,6 +68,18 @@ exports.getMe = asyncHandler(async (req, res, next) => {
     })
 });
 
+//@desc Current User
+//@router /api/v1/user/me
+//@access Private
+exports.logoutUser = asyncHandler(async (req, res, next) => {
+    res.cookie('token', 'none', {
+        expires: new Date(Date.now() + 10 * 1000),
+        httpOnly: true
+    });
+
+    res.status(200).json({ success: true, data: {} })
+});
+
 //@desc Forgot password
 //@router /api/v1/user/forgotpassword
 //@access Public

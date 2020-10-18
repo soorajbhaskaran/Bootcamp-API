@@ -6,6 +6,7 @@ const connectDB = require('./config/db');
 const customError = require('./middleware/error');
 const colors = require('colors');
 const path = require('path');
+const mongoSanitize=require('express-mongo-sanitize')
 const cookie = require('cookie-parser');
 
 //This loads all the env variables
@@ -18,6 +19,7 @@ const review=require('./routes/reviews');
 const user = require('./routes/auth');
 const admin = require('./routes/user');
 const cookieParser = require('cookie-parser');
+const { use } = require('./routes/reviews');
 
 
 //connecting to database
@@ -36,6 +38,9 @@ if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
 }
 
+//Express sanitize
+app,use(mongoSanitize())
+
 //File uploading
 app.use(fileUpload());
 
@@ -49,11 +54,11 @@ app.use('/api/v1/admin', admin);
 //Declaring static file
 app.use(express.static(path.join(__dirname, 'public')));
 
-//use express custom error handler
-app.use(customError);
-
 //Using cookie-parser
 app.use(cookieParser());
+
+//use express custom error handler
+app.use(customError);
 
 
 const PORT = process.env.PORT || 5000;

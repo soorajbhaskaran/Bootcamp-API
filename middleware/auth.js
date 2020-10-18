@@ -6,17 +6,19 @@ const ErrorResponce = require('../utils/errorResponce');
 exports.protect = asyncHandler(async (req, res, next) => {
 
     let token;
-
+    //Checking the header for token
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearers')) {
 
         token = req.headers.authorization.split(' ')[1];
 
 
     }
-    console.log(token);
-    //else if (req.cookies.token) {
-    //    token=req.cookies.token
-    //}
+    //console.log(token);
+
+    //Checking cookies for token
+    else if (req.cookies.token) {
+        token = req.cookies.token
+    }
 
     //Make sure token exists
     if (!token) {

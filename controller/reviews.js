@@ -1,6 +1,7 @@
 const Review = require('../models/Reviews');
 const ErrorResponce = require('../utils/errorResponce');
 const asyncHandler = require('../middleware/asyn');
+const Bootcamp = require('../models/Bootcamp');
 
 //@desc get all Reviews
 //@router /api/v1/reviews
@@ -43,4 +44,76 @@ exports.getSingleReview = asyncHandler(async (req, res, next) => {
     });
 
 
+});
+
+//@desc add a review
+//@router /api/v1/bootcamp/:bootcampId/review
+//@access Private
+
+exports.addReview = asyncHandler(async (req, res, next) => {
+    req.body.bootcamp = req.params.bootcampId;
+    req.body.user = req.user.id;
+
+    const bootcamp = await Bootcamp.findById(req.params.bootcampId);
+
+    //Checking bootcamp exists
+    if (!bootcamp) {
+        return next(new ErrorResponce(`Bootcamp not found`, 404));
+    }
+
+    const review = await Review.create(req.body);
+
+    //CHeckimg review created
+    if (!review) {
+        return next(new ErrorResponce(`Review not added`, 404));
+    }
+
+    res.status(201).json({
+        success: true, data: review
+    })
+
+});
+
+//@desc Update a review
+//@router /api/v1/review/:id
+//@access Private
+
+exports.updateReview = asyncHandler(async (req, res, next) => {
+
+    let review = await Review.findById(req.params.id);
+
+    if (!review) {
+        return next(new ErrorResponce(`Review not found with id ${req.params.id}`, 404));
+    }
+
+    //Check the person has the authorization to access
+    if (review.user.toString() !== req.user.id && req.user.role !== 'admin') {
+        return next(new ErrorResponce('Not authorized to access the review', 404));
+    }
+
+    review = await Review.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+
+    res.status(200).json({ success: true, data: review })
+});
+
+//@desc Delete review
+//@router /api/v1/review/:id
+//@access Private
+
+exports.deleteReview = asyncHandler(async (req, res, next) => {
+
+    const review = await Review.findById(req.params.id);
+
+    if (!review) {
+        return next(new ErrorResponce(`Review not found with id ${req.params.id}`, 404));
+    }
+
+    //Check the person has the authorization to access
+    if (review.user.toString() !== req.user.id && req.user.role !== 'admin') {
+        return next(new ErrorResponce('Not authorized to access the review', 404));
+    }
+
+   await review.remove();
+
+    res.status(200).json({ success: true, data: {} })
 });
